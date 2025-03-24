@@ -41,7 +41,45 @@ module.exports = {
                     iconURL: 'https://cdn.discordapp.com/attachments/1188570570288275600/1353296064928813127/cb3ba39c559e8033534fddcc375a658b.png',
                 })
                 .setTimestamp();
-        
+
+                const originalMessage = await interaction.channel.messages.fetch(interaction.message.id);
+
+                const dropdown = new ActionRowBuilder().addComponents(
+                    new StringSelectMenuBuilder()
+                        .setCustomId('ticket_dropdown')
+                        .setPlaceholder('Select your support enquiry...')
+                        .addOptions(
+                            {
+                                label: 'General Support',
+                                description: 'If you need general support.',
+                                value: 'general_support', 
+                                emoji: '<:helper:901415787519172649>',
+                            },
+                            {
+                                label: 'Game Issue',
+                                description: 'Data Loss, Bugs, Exploiters.',
+                                value: 'game_issue', 
+                                emoji: '<:Warning:1188296555640406076>',
+                            },
+                            {
+                                label: 'Discord Issues',
+                                description: 'Reporting Users, any other discord issues.',
+                                value: 'discord_issue', 
+                                emoji: '<:IL_Discord:957599524547878962>',
+                            },
+                            {
+                                label: 'Staff Applications',
+                                description: 'If you want to apply for staff, or a position within PixelBound Entertainment.',
+                                value: 'staff_app', 
+                                emoji: '<a:Applications:947867110946799656>',
+                            },
+                        ),
+                );
+    
+                await originalMessage.edit({
+                    components: [dropdown],
+                });
+
             await interaction.reply({ embeds: [followupembed], ephemeral: true });
         
             const ticketCategoryId = '1353384018434986064'; // Replace with your ticket category ID
@@ -336,6 +374,7 @@ module.exports = {
             if (selectedValue !== 'staff_app') {
                 await ticketChannel.send({ embeds: [additionalEmbed] });
             }
+   
         }
 
         // Handle application role selection
@@ -353,6 +392,56 @@ module.exports = {
                         ephemeral: true,
                     });
                 }
+
+                
+                const originalMessage = await interaction.channel.messages.fetch(interaction.message.id);
+
+                const staffRoleMenuDisabled = new ActionRowBuilder().addComponents(
+                    new StringSelectMenuBuilder()
+                        .setCustomId('app_role_select')
+                        .addOptions(
+                            {
+                                label: 'General Support',
+                                description: 'If you need general support.',
+                                value: 'general_support', 
+                                emoji: '<:helper:901415787519172649>',
+                            },
+                            {
+                                label: 'Game Issue',
+                                description: 'Data Loss, Bugs, Exploiters.',
+                                value: 'game_issue', 
+                                emoji: '<:Warning:1188296555640406076>',
+                            },
+                            {
+                                label: 'Discord Issues',
+                                description: 'Reporting Users, any other discord issues.',
+                                value: 'discord_issue', 
+                                emoji: '<:IL_Discord:957599524547878962>',
+                            },
+                            {
+                                label: 'Staff Applications',
+                                description: 'If you want to apply for staff, or a position within PixelBound Entertainment.',
+                                value: 'staff_app', 
+                                emoji: '<a:Applications:947867110946799656>',
+                            },
+                        )
+                        .setPlaceholder(`You chose to apply for ${selectedRole}`)
+                        .setDisabled(true)
+                );
+
+                const staffButtons = new ActionRowBuilder().addComponents(
+                    new ButtonBuilder()
+                        .setCustomId('close_ticket')
+                        .setLabel('Close Ticket')
+                        .setStyle(ButtonStyle.Danger),
+                    new ButtonBuilder()
+                        .setCustomId('ticket_info')
+                        .setLabel('Ticket Information')
+                        .setStyle(ButtonStyle.Primary),
+                );
+
+                await originalMessage.edit({components: [staffRoleMenuDisabled, staffButtons]})
+
 
                 // Create an embed explaining the application process
                 const processEmbed = new EmbedBuilder()
@@ -514,7 +603,7 @@ module.exports = {
                     embeds: [embed],
                 });
             }
-        
+
             // Create embeds for the logs channel
             const logsEmbed = new EmbedBuilder()
                 .setColor('#fc7a23')
@@ -603,7 +692,6 @@ module.exports = {
                             files: [transcript], 
                         });
                     } catch (error) {
-                        console.error('Failed to send DM to the user:', error);
                         await interaction.followUp({
                             content: 'I was unable to send a DM to the ticket creator. They may have DMs disabled.',
                             ephemeral: true,
@@ -646,7 +734,7 @@ module.exports = {
                     try {
                         await interaction.channel.delete();
                     } catch (error) {
-                        //console.error('Failed to delete the ticket channel:', error);
+
                     }
                 }, 30000); // 30 seconds delay
             }
@@ -717,6 +805,182 @@ module.exports = {
                     embeds: [ticketInfoEmbed],
                     ephemeral: true,
                 });
+            }           
+
+            if (interaction.customId.startsWith('accept_') || interaction.customId.startsWith('deny_')) {
+                try {
+                    const [action, userId, role] = interaction.customId.split('_');
+                    const staffMember = interaction.user;
+                    
+                    // 1. First update the application log (your existing code)
+                    const originalLogsEmbed = interaction.message.embeds[0];
+                    const updatedLogsEmbed = new EmbedBuilder()
+                        .setTitle(originalLogsEmbed.title)
+                        .setDescription(originalLogsEmbed.description)
+                        .setColor(action === 'accept' ? '#00ff00' : '#ff0000')
+                        .addFields(originalLogsEmbed.fields)
+                        .setFooter({
+                            text: action === 'accept' 
+                                ? `✅ Accepted by ${staffMember.tag}` 
+                                : `❌ Denied by ${staffMember.tag}`,
+                            iconURL: originalLogsEmbed.footer?.iconURL
+                        })
+                        .setTimestamp();
+            
+                    const disabledButtons = new ActionRowBuilder().addComponents(
+                        new ButtonBuilder()
+                            .setCustomId('accept_disabled')
+                            .setLabel(action === 'accept' ? 'Accepted' : 'Accept')
+                            .setStyle(action === 'accept' ? ButtonStyle.Success : ButtonStyle.Secondary)
+                            .setDisabled(true),
+                        new ButtonBuilder()
+                            .setCustomId('deny_disabled')
+                            .setLabel(action === 'deny' ? 'Denied' : 'Deny')
+                            .setStyle(action === 'deny' ? ButtonStyle.Danger : ButtonStyle.Secondary)
+                            .setDisabled(true)
+                    );
+            
+                    await interaction.update({ embeds: [updatedLogsEmbed], components: [disabledButtons] });
+            
+                    // 2. Find the ticket channel in the specified category
+                    const TICKET_CATEGORY_ID = '1353384018434986064'; // Replace with your category ID
+                    const category = interaction.guild.channels.cache.get(TICKET_CATEGORY_ID);
+                    
+                    if (!category) {
+                        return;
+                    }
+            
+                    // Find the ticket channel with matching user ID in topic
+                    const ticketChannel = category.children.cache.find(channel => {
+                        return channel.topic?.includes(`Ticket created by ${userId}`);
+                    });
+            
+                    if (!ticketChannel) {
+                        return;
+                    }
+            
+                    // 3. Find and update the application message in the ticket channel
+                    const ticketMessages = await ticketChannel.messages.fetch({ limit: 50 });
+                    const applicationMessage = ticketMessages.find(msg => 
+                        msg.embeds[0]?.title?.includes('Application') && 
+                        msg.author.id === interaction.client.user.id
+                    );
+            
+                    if (applicationMessage) {
+                        const originalTicketEmbed = applicationMessage.embeds[0];
+                        const updatedTicketEmbed = new EmbedBuilder()
+                            .setTitle(originalTicketEmbed.title)
+                            .setDescription(originalTicketEmbed.description)
+                            .setColor(action === 'accept' ? '#00ff00' : '#ff0000')
+                            .addFields(originalTicketEmbed.fields)
+                            .setFooter({
+                                text: action === 'accept' 
+                                    ? '✅ Application Accepted' 
+                                    : '❌ Application Denied',
+                                iconURL: originalTicketEmbed.footer?.iconURL
+                            })
+                            .setTimestamp();
+            
+                        await applicationMessage.edit({ embeds: [updatedTicketEmbed] });
+                    }
+            
+                    // 4. DM the applicant (your existing code)
+                    const applicant = await interaction.guild.members.fetch(userId).catch(() => null);
+                    if (applicant) {
+                        try {
+                            await applicant.send({
+                                embeds: [new EmbedBuilder()
+                                    .setTitle(action === 'accept' ? '🎉 Application Accepted' : '❌ Application Denied')
+                                    .setDescription(getRoleSpecificMessage(role, action))
+                                    .setColor(action === 'accept' ? '#00ff00' : '#ff0000')
+                                    .setTimestamp()
+                                ]
+                            });
+                            
+                            // Role-specific message function
+                            function getRoleSpecificMessage(role, action) {
+                                const roleMessages = {
+                                    'modeller': {
+                                        accept: '',
+                                        deny: ''
+                                    },
+                                    'builder': {
+                                        accept: '',
+                                        deny: ''
+                                    },
+                                    'scripter': {
+                                        accept: '',
+                                        deny: ''
+                                    },
+                                    'animator': {
+                                        accept: '',
+                                        deny: '',
+                                    },
+                                    'projectmanager': {
+                                        accept: '',
+                                        deny: '',
+                                    },
+                                    'trialmoderator': {
+                                        accept: 'Hey! Congratulations and welcome to the PixelBound Staff Team. Head over to ⁠<#1285659952710422579> and make sure you understand the rules of representing PixelBound. Make sure to be as active as possible in our server, and you can work your way up the ranks.\n\nThank you for filing out a application and welcome to the team! ',
+                                        deny: 'Hey! Thanks for filing out an application, unfortunately we won\'t be accepting you, but if you would like to apply again in the future we would be more than happy to re-review your new application. '
+                                    },
+                                    'socialmediamanager': {
+                                        accept: '',
+                                        deny: '',
+                                    },
+                                };
+                            
+                                // Default message if role not found
+                                const defaultMessage = `Your ${applicationTypes[role]?.role || 'staff'} application has been ${action === 'accept' ? 'approved' : 'not approved'}.`;
+                                
+                                return roleMessages[role]?.[action] || defaultMessage;
+                            }
+                        } catch (err) {
+                            ticketChannel.send({content: `${applicant}, I couldn't DM you. Your DM's Might be closed, sending the message here.`})
+                            await ticketChannel.send({
+                                embeds: [new EmbedBuilder()
+                                    .setTitle(action === 'accept' ? '🎉 Application Accepted' : '❌ Application Denied')
+                                    .setDescription(getRoleSpecificMessage(role, action))
+                                    .setColor(action === 'accept' ? '#00ff00' : '#ff0000')
+                                    .setTimestamp()
+                                ]
+                            });
+                            
+                            // Role-specific message function
+                            function getRoleSpecificMessage(role, action) {
+                                const roleMessages = {
+
+                                };
+                            
+                                // Default message if role not found
+                                const defaultMessage = `Your ${applicationTypes[role]?.role || 'staff'} application has been ${action === 'accept' ? 'approved' : 'not approved'}.`;
+                                
+                                return roleMessages[role]?.[action] || defaultMessage;
+                        }
+                    }
+
+                        try {
+                            await ticketChannel.permissionOverwrites.edit(userId, {
+                                SendMessages: false,
+                                AddReactions: false,
+                                CreatePublicThreads: false,
+                                CreatePrivateThreads: false,
+                                SendMessagesInThreads: false
+                            });
+                            await ticketChannel.send({content: `This ticket can now be closed by a member of staff.`})
+                        } catch (error) {
+                            console.error(`Failed to update permissions for ${userId} in ${ticketChannel.name}:`, error);
+                        }
+                    }
+            
+                } catch (error) {
+                    if (!interaction.replied) {
+                        await interaction.followUp({ 
+                            content: 'An error occurred while processing this application.', 
+                            ephemeral: true 
+                        });
+                    }
+                }
             }
         }
     },

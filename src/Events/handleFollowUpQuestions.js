@@ -1,5 +1,5 @@
-const { Events, EmbedBuilder } = require('discord.js');
-const { applicationTypes, followUpProgress } = require('./ticket-menu'); // Adjust the path as needed
+const { Events, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
+const { applicationTypes, followUpProgress } = require('./ticket-menu');
 
 // Helper function to truncate text
 function truncateText(text, maxLength = 999) {
@@ -12,12 +12,21 @@ module.exports = {
         // Ignore messages from bots
         if (message.author.bot) return;
 
-        // Check if the user is currently answering follow-up questions
-        const userId = message.author.id;
-        const progress = followUpProgress.get(userId);
+        // Check if this is a ticket channel by looking for user ID in topic
+        if (!message.channel.topic || !message.channel.topic.includes('Ticket created by ')) {
+            return; // Not a ticket channel, ignore
+        }
 
+        // Extract user ID from channel topic
+        const ticketUserId = message.channel.topic.replace('Ticket created by ', '');
+        if (message.author.id !== ticketUserId) {
+            return; // Message not from ticket creator, ignore
+        }
+
+        // Check if the user is currently answering follow-up questions
+        const progress = followUpProgress.get(message.author.id);
         if (!progress) {
-            return; // The user is not answering follow-up questions
+            return; // User not in follow-up process
         }
 
         const { role, step, answers, originalAnswers } = progress;
@@ -25,7 +34,7 @@ module.exports = {
 
         // Store the user's response
         const currentQuestion = followUpQuestions[step];
-        answers[currentQuestion.id] = message.content; // Store the message content as the answer
+        answers[currentQuestion.id] = message.content;
 
         // Check if there are more follow-up questions
         if (step + 1 < followUpQuestions.length) {
@@ -33,80 +42,79 @@ module.exports = {
             const nextQuestion = followUpQuestions[step + 1];
 
             const embed = new EmbedBuilder()
-            .setColor('#fc7a23')
-            .setTitle(`Followup Questions`)
-            .setDescription(`${nextQuestion.label}`)
-            .setFooter({
-                text: 'PixelBound Entertainment - Ticket System',
-                iconURL: 'https://cdn.discordapp.com/attachments/1188570570288275600/1353296064928813127/cb3ba39c559e8033534fddcc375a658b.png',
-            })
-            .setTimestamp();
-
-            await message.channel.send({
-                embeds: [embed],
-            });
-
-            // Update the progress
-            followUpProgress.set(userId, {
-                role,
-                step: step + 1,
-                answers,
-                originalAnswers, // Preserve the original answers
-            });
-        } else {
-            // All follow-up questions have been answered
-            await message.channel.send({
-                content: `${message.author}, thank you for answering all the follow-up questions!`,
-            });
-
-            // Combine original answers and follow-up answers
-            const combinedAnswers = {
-                ...originalAnswers, // Original application answers
-                ...answers, // Follow-up answers
-            };
-
-            // Create a single embed with all answers
-            const combinedEmbed = new EmbedBuilder()
                 .setColor('#fc7a23')
-                .setTitle(`📄 Application from ${message.author.tag}`)
-                .setDescription(`**Role Applied For:** ${applicationTypes[role].role}`)
-                .addFields(
-                    // Add original application questions
-                    ...applicationTypes[role].questions.map((question) => ({
-                        name: question.label,
-                        value: truncateText(originalAnswers[question.id] || 'Not provided'), // Truncate if necessary
-                        inline: false,
-                    })),
-                    // Add follow-up questions
-                    ...followUpQuestions.map((question) => ({
-                        name: question.label,
-                        value: truncateText(answers[question.id] || 'Not provided'), // Truncate if necessary
-                        inline: false,
-                    })),
-                )
+                .setTitle(`Followup Question (${step + 2}/${followUpQuestions.length})`)
+                .setDescription(nextQuestion.label)
                 .setFooter({
-                    text: 'PixelBound Entertainment - Staff Applications',
+                    text: 'PixelBound Entertainment - Ticket System',
                     iconURL: 'https://cdn.discordapp.com/attachments/1188570570288275600/1353296064928813127/cb3ba39c559e8033534fddcc375a658b.png',
                 })
                 .setTimestamp();
 
-            // Send the combined embed to the ticket channel
-            await message.channel.send({
-                embeds: [combinedEmbed],
+            await message.channel.send({ 
+                embeds: [embed] 
             });
 
-            // Send the combined embed to the logs channel
-            const logsChannel = message.guild.channels.cache.get('1353384761980358817'); // Replace with your logs channel ID
+            // Update progress
+            followUpProgress.set(message.author.id, {
+                role,
+                step: step + 1,
+                answers,
+                originalAnswers,
+            });
+        } else {
+            // All questions answered - compile final application
+            const combinedEmbed = new EmbedBuilder()
+                .setColor('#fc7a23')
+                .setTitle(`📄 ${applicationTypes[role].role} Application`)
+                .setDescription(`From ${message.author.tag} (ID: ${message.author.id})`)
+                .addFields(
+                    ...applicationTypes[role].questions.map(q => ({
+                        name: q.label,
+                        value: truncateText(originalAnswers[q.id] || 'Not provided'),
+                        inline: false
+                    })),
+                    ...followUpQuestions.map(q => ({
+                        name: q.label,
+                        value: truncateText(answers[q.id] || 'Not provided'),
+                        inline: false
+                    }))
+                )
+                .setFooter({
+                    text: 'Application completed - Awaiting review',
+                    iconURL: 'https://cdn.discordapp.com/attachments/1188570570288275600/1353296064928813127/cb3ba39c559e8033534fddcc375a658b.png'
+                })
+                .setTimestamp();
+
+            // Create Accept/Deny buttons
+            const decisionButtons = new ActionRowBuilder().addComponents(
+                new ButtonBuilder()
+                    .setCustomId(`accept_${message.author.id}_${role}`)
+                    .setLabel('Accept')
+                    .setStyle(ButtonStyle.Success),
+                new ButtonBuilder()
+                    .setCustomId(`deny_${message.author.id}_${role}`)
+                    .setLabel('Deny')
+                    .setStyle(ButtonStyle.Danger)
+            );
+
+            // Send to ticket channel
+            await message.channel.send({
+                embeds: [combinedEmbed]
+            });
+
+            // Send to logs channel with decision buttons
+            const logsChannel = message.guild.channels.cache.get('1353384761980358817');
             if (logsChannel) {
-                await logsChannel.send({
+                await logsChannel.send({ 
+                    //content: `New application from ${message.author.tag} (ID: ${message.author.id})`,
                     embeds: [combinedEmbed],
+                    components: [decisionButtons]
                 });
-            } else {
-                console.error('Logs channel not found!');
             }
 
-            // Clear the user's progress
-            followUpProgress.delete(userId);
+            // Clear progress
+            followUpProgress.delete(message.author.id);
         }
     },
 };
