@@ -692,7 +692,7 @@ module.exports = {
                             files: [transcript], 
                         });
                     } catch (error) {
-                        await interaction.followUp({
+                        await interaction.reply({
                             content: 'I was unable to send a DM to the ticket creator. They may have DMs disabled.',
                             ephemeral: true,
                         });
@@ -901,32 +901,32 @@ module.exports = {
                             function getRoleSpecificMessage(role, action) {
                                 const roleMessages = {
                                     'modeller': {
-                                        accept: '',
-                                        deny: ''
+                                        accept: 'Congratulations and welcome to the PixelBound Development Team. Head over to ⁠<#1285660748445646889> to converse with other developers, and make sure you understand the rules of representing PixelBound. Make sure to be as active as possible in our server and games.',
+                                        deny: 'Thank you for filing out an application, unfortunately we won\'t be needing your skills at PixelBound but wish you the best in the future, be sure to apply again in the future!'
                                     },
                                     'builder': {
-                                        accept: '',
-                                        deny: ''
+                                        accept: 'Congratulations and welcome to the PixelBound Development Team. Head over to ⁠<#1285660748445646889> to converse with other developers, and make sure you understand the rules of representing PixelBound. Make sure to be as active as possible in our server and games.',
+                                        deny: 'Thank you for filing out an application, unfortunately we won\'t be needing your skills at PixelBound but wish you the best in the future, be sure to apply again in the future!'
                                     },
                                     'scripter': {
-                                        accept: '',
-                                        deny: ''
+                                        accept: 'Congratulations and welcome to the PixelBound Development Team. Head over to ⁠<#1285660748445646889> to converse with other developers, and make sure you understand the rules of representing PixelBound. Make sure to be as active as possible in our server and games.',
+                                        deny: 'Thank you for filing out an application, unfortunately we won\'t be needing your skills at PixelBound but wish you the best in the future, be sure to apply again in the future!'
                                     },
                                     'animator': {
-                                        accept: '',
-                                        deny: '',
+                                        accept: 'Congratulations and welcome to the PixelBound Development Team. Head over to ⁠<#1285660748445646889> to converse with other developers, and make sure you understand the rules of representing PixelBound. Make sure to be as active as possible in our server and games.',
+                                        deny: 'Thank you for filing out an application, unfortunately we won\'t be needing your skills at PixelBound but wish you the best in the future, be sure to apply again in the future!',
                                     },
                                     'projectmanager': {
-                                        accept: '',
-                                        deny: '',
+                                        accept: 'Congratulations and welcome to the PixelBound Development Team. Head over to ⁠<#1285660748445646889> to converse with other developers, and make sure you understand the rules of representing PixelBound. Make sure to be as active as possible in our server and games.',
+                                        deny: 'Thank you for filing out an application, unfortunately we won\'t be needing your skills at PixelBound but wish you the best in the future, be sure to apply again in the future!'
                                     },
                                     'trialmoderator': {
-                                        accept: 'Hey! Congratulations and welcome to the PixelBound Staff Team. Head over to ⁠<#1285659952710422579> and make sure you understand the rules of representing PixelBound. Make sure to be as active as possible in our server, and you can work your way up the ranks.\n\nThank you for filing out a application and welcome to the team! ',
-                                        deny: 'Hey! Thanks for filing out an application, unfortunately we won\'t be accepting you, but if you would like to apply again in the future we would be more than happy to re-review your new application. '
+                                        accept: 'Congratulations and welcome to the PixelBound Staff Team. Head over to ⁠<#1285659952710422579> and make sure you understand the rules of representing PixelBound. Make sure to be as active as possible in our server, and you can work your way up the ranks.\n\nThank you for filing out a application and welcome to the team! ',
+                                        deny: 'Thanks for filing out an application, unfortunately we won\'t be accepting you, but if you would like to apply again in the future we would be more than happy to re-review your new application. '
                                     },
                                     'socialmediamanager': {
-                                        accept: '',
-                                        deny: '',
+                                        accept: 'Congratulations and welcome to the PixelBound Team. DM <@710785866716545034>> ASAP to get started! Make sure you understand the rules of representing PixelBound, and make sure to be as active as possible in our server.',
+                                        deny: 'Thank you for filing out an application, unfortunately we won\'t be needing your skills at PixelBound but wish you the best in the future, be sure to apply again in the future!',
                                     },
                                 };
                             
@@ -949,7 +949,34 @@ module.exports = {
                             // Role-specific message function
                             function getRoleSpecificMessage(role, action) {
                                 const roleMessages = {
-
+                                    'modeller': {
+                                        accept: 'Congratulations and welcome to the PixelBound Development Team. Head over to ⁠<#1285660748445646889> to converse with other developers, and make sure you understand the rules of representing PixelBound. Make sure to be as active as possible in our server and games.',
+                                        deny: 'Thank you for filing out an application, unfortunately we won\'t be needing your skills at PixelBound but wish you the best in the future, be sure to apply again in the future!'
+                                    },
+                                    'builder': {
+                                        accept: 'Congratulations and welcome to the PixelBound Development Team. Head over to ⁠<#1285660748445646889> to converse with other developers, and make sure you understand the rules of representing PixelBound. Make sure to be as active as possible in our server and games.',
+                                        deny: 'Thank you for filing out an application, unfortunately we won\'t be needing your skills at PixelBound but wish you the best in the future, be sure to apply again in the future!'
+                                    },
+                                    'scripter': {
+                                        accept: 'Congratulations and welcome to the PixelBound Development Team. Head over to ⁠<#1285660748445646889> to converse with other developers, and make sure you understand the rules of representing PixelBound. Make sure to be as active as possible in our server and games.',
+                                        deny: 'Thank you for filing out an application, unfortunately we won\'t be needing your skills at PixelBound but wish you the best in the future, be sure to apply again in the future!'
+                                    },
+                                    'animator': {
+                                        accept: 'Congratulations and welcome to the PixelBound Development Team. Head over to ⁠<#1285660748445646889> to converse with other developers, and make sure you understand the rules of representing PixelBound. Make sure to be as active as possible in our server and games.',
+                                        deny: 'Thank you for filing out an application, unfortunately we won\'t be needing your skills at PixelBound but wish you the best in the future, be sure to apply again in the future!',
+                                    },
+                                    'projectmanager': {
+                                        accept: 'Congratulations and welcome to the PixelBound Development Team. Head over to ⁠<#1285660748445646889> to converse with other developers, and make sure you understand the rules of representing PixelBound. Make sure to be as active as possible in our server and games.',
+                                        deny: 'Thank you for filing out an application, unfortunately we won\'t be needing your skills at PixelBound but wish you the best in the future, be sure to apply again in the future!'
+                                    },
+                                    'trialmoderator': {
+                                        accept: 'Congratulations and welcome to the PixelBound Staff Team. Head over to ⁠<#1285659952710422579> and make sure you understand the rules of representing PixelBound. Make sure to be as active as possible in our server, and you can work your way up the ranks.\n\nThank you for filing out a application and welcome to the team! ',
+                                        deny: 'Thanks for filing out an application, unfortunately we won\'t be accepting you, but if you would like to apply again in the future we would be more than happy to re-review your new application. '
+                                    },
+                                    'socialmediamanager': {
+                                        accept: 'Congratulations and welcome to the PixelBound Team. DM <@710785866716545034>> ASAP to get started! Make sure you understand the rules of representing PixelBound, and make sure to be as active as possible in our server.',
+                                        deny: 'Thank you for filing out an application, unfortunately we won\'t be needing your skills at PixelBound but wish you the best in the future, be sure to apply again in the future!',
+                                    },
                                 };
                             
                                 // Default message if role not found
