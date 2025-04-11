@@ -3,5 +3,97 @@
 	"clientId": "1353075402674798662",
 	"guildId": "1188570570288275597",
 	"database": "mongodb+srv://Samuel:QsgnJ4yuvYyMcPUk@fortnite-maps.cacx92w.mongodb.net/Schemas",
-	"STAFF_ROLE_ID": "1230633139794346026"
-}
+	"STAFF_ROLE_ID": "1230633139794346026",
+	"apiKey": "A&3-v1@qZ%L;^7}x{G5+f[8X2o1k=~9nJ/mF#4tY!Wb3C^oR!QH6~cK7]9zY+5T^v0o1kD~8hX&V3w#JzL2p_1gJiK.",
+	"statusChannelId": "1354540518683443470",
+	"invalidRequestsChannelId": "1350965339164381194",
+	"ownerId": "574217755692236803",
+	"errorWebhook": "https://discord.com/api/webhooks/1358556639132778648/gy6t0UubgL1K1L3wSmP5fw2e7GCCCchMTAdbRkd6R4XwNpu0Lm3ohLO_kkc4XanM9RtN", 
+	"roles": {
+		"restricted": "1307319157343260794"
+	},
+	"channels": {
+        "modLogs": "1355874492303278280",
+        "appeals": "1209561813788659762"
+    },
+	"statusConfig": {
+	  "notificationUsers": ["574217755692236803", "1145272976212754472"],
+	  "alertThresholds": {
+		"immediateAlert": ["Main", "Secondary"],
+		"degradedAlert": ["Backup 1H", "Backup 3H", "Backup 6H", "Backup 9H"],
+		"fullOutageResponse": {
+		  "pingInterval": 300,
+		  "escalateAfter": 900
+		}
+	  },
+	  "escalation": {
+		"enabled": true,
+		"impactTemplates": {
+		  "default": "Service degradation affecting some features",
+		  "Main": "Core functionality impacted",
+		  "Secondary": "Redundancy lost - system vulnerable"
+		},
+		"levels": [
+		  {
+			"afterMinutes": 5,
+			"action": "discord_ping",
+			"targets": ["574217755692236803"],
+			"message": "🚨 Stage 1 Alert: {{affectedStores}} offline",
+			"additionalActions": [
+			  {
+				"type": "channel_message",
+				"content": "A team lead has been notified of the outage",
+				"channel": "gamestatus"
+			  }
+			]
+		  },
+		  {
+			"afterMinutes": 15,
+			"action": "discord_ping",
+			"targets": ["574217755692236803", "1145272976212754472"],
+			"message": "🚨🚨 Stage 2 Escalation: {{affectedStores}} still offline ({{duration}} minutes)\nImpact: {{impactDescription}}"
+		  },
+		  {
+			"afterMinutes": 30,
+			"action": "discord_ping",
+			"targets": ["574217755692236803", "1145272976212754472"],
+			"message": "🚨🚨🚨 Stage 3 Emergency: CRITICAL outage ongoing for {{duration}} minutes\nAffected: {{affectedStores}}\nImmediate action required!"
+		  }
+		]
+	  },
+	  "datastores": {
+		"main_datastore_status": {
+		  "displayName": "Main",
+		  "updateInterval": 30,
+		  "critical": true,
+		  "impact": "Core functionality impacted"
+		},
+		"secondary_datastore_status": {
+		  "displayName": "Secondary",
+		  "updateInterval": 30,
+		  "critical": true,
+		  "impact": "Redundancy lost - system vulnerable"
+		},
+		"backup_datastore_1_status": {
+		  "displayName": "Backup 1H",
+		  "updateInterval": 30,
+		  "impact": "Recent backups unavailable"
+		},
+		"backup_datastore_2_status": {
+		  "displayName": "Backup 3H",
+		  "updateInterval": 30,
+		  "impact": "Mid-term backups unavailable"
+		},
+		"backup_datastore_3_status": {
+		  "displayName": "Backup 6H",
+		  "updateInterval": 30,
+		  "impact": "Long-term backups unavailable"
+		},
+		"backup_datastore_4_status": {
+		  "displayName": "Backup 9H",
+		  "updateInterval": 30,
+		  "impact": "Archival backups unavailable"
+		}
+	  }
+	}
+  }
