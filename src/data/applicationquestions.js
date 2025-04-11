@@ -42,7 +42,7 @@ module.exports = {
             { id: 'q4', label: 'Complex script made?', style: TextInputStyle.Short, required: true }
         ],
         followUpQuestions: [
-            { id: 'f1', label: 'Share a GitHub/Roblox place link. Explain how you would optimize a laggy combat system in a PixelBound game.' },
+            { id: 'f1', label: 'Explain how you would optimize a laggy combat system in a PixelBound game.' },
             { id: 'f2', label: 'Describe your approach to creating a secure anti-exploit system for a PixelBound game with player trading.' },
             { id: 'f3', label: 'How would you implement a reliable DataStore solution for PixelBound player progression?' },
             { id: 'f4', label: 'What practices do you use to write modular, maintainable code for PixelBound\'s development team?' },
