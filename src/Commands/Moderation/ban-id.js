@@ -75,6 +75,7 @@ module.exports = {
                 .setTitle('✅ Ban Successful')
                 .setDescription(`Successfully banned **${target.tag}** (ID: ${target.id}).`)
                 .addFields({ name: 'Reason', value: reason, inline: false })
+                addFields({ name: 'Banned By', value: `${interaction.user.tag}`, inline: false })
                 .setColor(0x00FF00);
             await interaction.editReply({ embeds: [embed] });
 
