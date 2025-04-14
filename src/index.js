@@ -220,6 +220,8 @@ const loadHandlers = errorHandler.wrap(async () => {
     }
 });
 
+
+
 // Start the bot
 loadHandlers().catch(error => {
     displayStatusTable();
