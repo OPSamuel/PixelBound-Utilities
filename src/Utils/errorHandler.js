@@ -1,5 +1,6 @@
 const { WebhookClient, EmbedBuilder } = require('discord.js');
 const config = require('../config.json');
+const webhooks = require("../data/Webhooks.js")
 const originalConsole = {
     error: console.error,
     warn: console.warn,
@@ -9,8 +10,8 @@ const originalConsole = {
 class NuclearErrorHandler {
     constructor(client) {
         this.client = client;
-        this.webhook = config.errorWebhook 
-            ? new WebhookClient({ url: config.errorWebhook })
+        this.webhook = webhooks.error
+            ? new WebhookClient({ url: webhooks.error })
             : null;
         this.errorCache = new Set();
         this.lastSent = 0;
