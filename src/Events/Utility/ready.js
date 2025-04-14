@@ -2,7 +2,6 @@ const { ActivityType } = require("discord.js");
 const mongoose = require("mongoose");
 const { database } = require("../../config.json");
 const statuses = require("../../data/specialpresence");
-//const statuses = require("../data/normalpresence");
 
 mongoose.set('strictQuery', true);
 
@@ -24,7 +23,6 @@ module.exports = {
         
         const updateStatus = () => {
             try {
-                // Get random non-repeating status
                 let currentIndex;
                 do {
                     currentIndex = Math.floor(Math.random() * statuses.length);
@@ -33,7 +31,6 @@ module.exports = {
                 previousIndex = currentIndex;
                 const status = statuses[currentIndex];
                 
-                // Update presence
                 client.user.setPresence({
                     activities: [{
                         name: status.text,
@@ -41,13 +38,9 @@ module.exports = {
                     }],
                     status: 'online'
                 });
-
-                // Optional debug logging
-                //console.log(`Status updated: ${status.text}`);
                 
             } catch (error) {
                 console.error("Status update error:", error);
-                // Fallback presence
                 client.user.setPresence({
                     activities: [{
                         name: "PixelBound Utilities",
@@ -58,11 +51,9 @@ module.exports = {
             }
         };
 
-        // Initial update + interval rotation
         updateStatus();
-        const rotationInterval = setInterval(updateStatus, 10000); // 10 seconds
+        const rotationInterval = setInterval(updateStatus, 10000);
         
-        // Cleanup on disconnect
         client.once('disconnect', () => clearInterval(rotationInterval));
     }
 };
