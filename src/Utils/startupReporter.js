@@ -1,5 +1,7 @@
 const { EmbedBuilder } = require('discord.js');
 const chalk = require('chalk');
+const fs = require('fs');
+const path = require('path');
 
 module.exports = async (client, config, status) => {
     try {
@@ -15,16 +17,26 @@ module.exports = async (client, config, status) => {
             console.warn(chalk.yellow(`⚠️ Could not fetch owner user (ID: ${config.ownerId})`));
             return;
         }
+        // Count command categories from folder structure
+        const commandsPath = path.join(__dirname, '../Commands'); // Adjust path as needed
+        let commandCategories = 0;
+        if (fs.existsSync(commandsPath)) {
+            commandCategories = fs.readdirSync(commandsPath)
+                .filter(file => fs.statSync(path.join(commandsPath, file)).isDirectory())
+                .length;
+        }
 
         // Prepare command statistics
         const loadedCommands = Object.values(status.commands).filter(s => s === '✅').length;
         const failedCommands = Object.values(status.commands).filter(s => s === '❌').length;
         const totalCommands = loadedCommands + failedCommands;
 
-        // Prepare event statistics
-        const loadedEvents = Object.values(status.events).filter(s => s === '✅').length;
-        const failedEvents = Object.values(status.events).filter(s => s === '❌').length;
+        // Prepare event statistics (still using name splitting)
+        const eventEntries = Object.entries(status.events);
+        const loadedEvents = eventEntries.filter(([_, stat]) => stat === '✅').length;
+        const failedEvents = eventEntries.filter(([_, stat]) => stat === '❌').length;
         const totalEvents = loadedEvents + failedEvents;
+        const eventCategories = new Set(eventEntries.map(([name]) => name.split('/')[0])).size;
 
         // Create the embed
         const embed = new EmbedBuilder()
@@ -48,7 +60,7 @@ module.exports = async (client, config, status) => {
                     value: [
                         `✅ Loaded: ${loadedCommands}/${totalCommands}`,
                         `❌ Failed: ${failedCommands}`,
-                        `📂 Categories: ${new Set(Object.keys(status.commands).map(c => c.split('/')[0])).size}`
+                        `📂 Categories: ${commandCategories}`
                     ].join('\n'),
                     inline: true
                 },
@@ -57,7 +69,7 @@ module.exports = async (client, config, status) => {
                     value: [
                         `✅ Loaded: ${loadedEvents}/${totalEvents}`,
                         `❌ Failed: ${failedEvents}`,
-                        `📂 Categories: ${new Set(Object.keys(status.events).map(e => e.split('/')[0])).size}`
+                        `📂 Categories: ${eventCategories}`
                     ].join('\n'),
                     inline: true
                 }
@@ -67,13 +79,13 @@ module.exports = async (client, config, status) => {
 
         // Add detailed command list if there are failures
         if (failedCommands > 0) {
-            const failedList = Object.entries(status.commands)
-                .filter(([_, status]) => status === '❌')
+            const failedList = commandEntries
+                .filter(([_, stat]) => stat === '❌')
                 .map(([name]) => `• ${name}`)
                 .join('\n');
 
             embed.addFields({
-                name: '❌ Failed Commands',
+                name: `❌ Failed Commands (${failedCommands})`,
                 value: failedList || 'None',
                 inline: false
             });
@@ -81,13 +93,13 @@ module.exports = async (client, config, status) => {
 
         // Add detailed event list if there are failures
         if (failedEvents > 0) {
-            const failedList = Object.entries(status.events)
-                .filter(([_, status]) => status === '❌')
+            const failedList = eventEntries
+                .filter(([_, stat]) => stat === '❌')
                 .map(([name]) => `• ${name}`)
                 .join('\n');
 
             embed.addFields({
-                name: '❌ Failed Events',
+                name: `❌ Failed Events (${failedEvents})`,
                 value: failedList || 'None',
                 inline: false
             });
@@ -95,7 +107,6 @@ module.exports = async (client, config, status) => {
 
         // Send the DM
         await owner.send({ embeds: [embed] });
-        console.log(chalk.green(`📨 Sent startup report to ${owner.tag}`));
     } catch (error) {
         console.error(chalk.red('❌ Failed to send startup report:'), error);
     }
