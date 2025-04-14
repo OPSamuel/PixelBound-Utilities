@@ -6,6 +6,7 @@ const statusHandler = require('./Api/status');
 const { table } = require('table');
 const chalk = require('chalk');
 const NuclearErrorHandler = require('./Utils/errorHandler'); // Add error handler
+const sendStartupReport = require('./Utils/startupReporter');
 
 // Load configuration
 const config = require('./config.json');
@@ -167,6 +168,9 @@ client.once('ready', errorHandler.wrap(async () => {
         status.systems.express = '✅';
         displayStatusTable();
         console.log(chalk.blue(`🌐 Status API listening on port ${STATUS_PORT}`));
+        
+        // Send startup report after everything is ready
+        sendStartupReport(client, config, status);
     });
 }));
 
