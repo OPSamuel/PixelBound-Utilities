@@ -49,6 +49,7 @@ module.exports = {
             await message.channel.send({
                 embeds: [embed],
                 components: [dropdown],
+                fetchReply: true,
             });
         }
     },
