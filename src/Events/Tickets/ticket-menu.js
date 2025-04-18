@@ -8,6 +8,9 @@ const { saveProgress, getProgress } = require('./followUpStorage');
 module.exports = {
     name: Events.InteractionCreate,
     async execute(interaction) {
+        if (!interaction.deferred && !interaction.replied) {
+            await interaction.deferReply({ ephemeral: true }).catch((error) => console.log(error));
+        }
         // Handle ticket dropdown selection
         if (interaction.isStringSelectMenu() && interaction.customId === 'ticket_dropdown') {
 
