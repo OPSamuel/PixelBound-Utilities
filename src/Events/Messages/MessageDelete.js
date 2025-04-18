@@ -9,13 +9,9 @@ module.exports = {
 
         try {
             const webhookUrl = webhooks.messages;
-            if (!webhookUrl) {
-                return;
-            }
+            if (!webhookUrl) return;
 
             const webhookClient = new WebhookClient({ url: webhookUrl });
-
-            // Check for image attachments
             const imageAttachments = Array.from(deletedMessage.attachments.values())
                 .filter(attach => attach.contentType?.startsWith('image/'));
 
@@ -30,15 +26,10 @@ module.exports = {
                 })
                 .setTimestamp();
 
-            // Set the description based on content type
             if (imageAttachments.length > 0) {
-                // For image messages
                 embed.setDescription(`**Image sent by ${deletedMessage.author || 'Deleted User'} Deleted in ${deletedMessage.channel}**`);
-                
-                // Add the first image to the embed
                 embed.setImage(imageAttachments[0].proxyURL);
                 
-                // Include text content if it exists
                 if (deletedMessage.content) {
                     embed.addFields({
                         name: 'Message',
@@ -47,20 +38,24 @@ module.exports = {
                     });
                 }
                 
-                // Add additional images as fields
+                // Fixed: Split long image lists into multiple fields
                 if (imageAttachments.length > 1) {
-                    embed.addFields({
-                        name: `Additional Images (${imageAttachments.length - 1})`,
-                        value: imageAttachments.slice(1).map(a => `[${a.name}](${a.proxyURL})`).join('\n'),
-                        inline: false
-                    });
+                    const imageLinks = imageAttachments.slice(1).map(a => `[${a.name}](${a.proxyURL})`);
+                    const chunkSize = 5; // Number of images per field
+                    
+                    for (let i = 0; i < imageLinks.length; i += chunkSize) {
+                        const chunk = imageLinks.slice(i, i + chunkSize);
+                        embed.addFields({
+                            name: `Additional Images (${i+1}-${Math.min(i+chunkSize, imageLinks.length)})`,
+                            value: chunk.join('\n'),
+                            inline: false
+                        });
+                    }
                 }
             } else {
-                // For text messages
                 let description = `**Message sent by ${deletedMessage.author || 'Deleted User'} Deleted in ${deletedMessage.channel}**\n`;
                 description += deletedMessage.content ? truncate(deletedMessage.content, 2000) : '*No text content*';
 
-                // Handle non-image attachments
                 if (deletedMessage.attachments.size > 0) {
                     description += '\n\n**Attachments:**';
                     deletedMessage.attachments.forEach(attachment => {
