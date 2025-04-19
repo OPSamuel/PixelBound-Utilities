@@ -120,6 +120,7 @@ module.exports = {
                     name: `ticket-${interaction.user.username}`,
                     type: 0,
                     parent: category,
+                    reason: `Ticket created for ${interaction.user}`,
                     permissionOverwrites: [
                         {
                             id: interaction.guild.id,
@@ -824,7 +825,7 @@ module.exports = {
                 // Delete the channel after 30 seconds
                 setTimeout(async () => {
                     try {
-                        await interaction.channel.delete();
+                        await interaction.channel.delete(`Ticket closed by ${interaction.user}`);
                     } catch (error) {
                         console.error('Failed to delete ticket channel:', error);
                     }
