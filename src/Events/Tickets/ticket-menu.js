@@ -710,75 +710,9 @@ module.exports = {
                     });
                 }
             
-                // Generate a transcript
-                const transcript = await createTranscript(interaction.channel, {
-                    limit: -1,
-                    returnType: 'attachment',
-                    filename: `${interaction.channel.name}-transcript.html`,
-                });
-            
                 // Fetch the user ID from the channel topic
                 const userId = interaction.channel.topic.replace('Ticket created by ', '');
                 const ticketCreator = interaction.guild.members.cache.get(userId);
-            
-                // Send the transcript to the logs channel
-                const logsChannel = interaction.guild.channels.cache.get('1353384132675244127');
-                if (logsChannel) {
-                    await logsChannel.send({
-                        content: `Transcript for ${interaction.channel.name}:`,
-                        files: [transcript],
-                    });
-                }
-            
-                // Send an embed to the user in DMs with the transcript
-                if (ticketCreator) {
-                    try {
-                        const closeEmbed = new EmbedBuilder()
-                            .setColor('#fc7a23')
-                            .setTitle('🎟️ Your Ticket Has Been Closed')
-                            .setDescription('Thank you for reaching out to PixelBound Entertainment! Your ticket has been closed. Below is a transcript of your ticket for your records.')
-                            .addFields(
-                                {
-                                    name: 'Ticket Channel',
-                                    value: `${interaction.channel.name}`,
-                                    inline: false,
-                                },
-                                {
-                                    name: 'Closed By',
-                                    value: `${interaction.member.user.tag} (ID: ${interaction.member.id})`,
-                                    inline: false,
-                                },
-                                {
-                                    name: 'Closed At',
-                                    value: new Date().toLocaleString('en-GB', { 
-                                        timeZone: 'Europe/London', 
-                                        hour12: false,
-                                        day: '2-digit',
-                                        month: 'short',
-                                        year: 'numeric',
-                                        hour: '2-digit',
-                                        minute: '2-digit'
-                                    }),
-                                    inline: false,
-                                }
-                            )
-                            .setFooter({
-                                text: 'PixelBound Entertainment - Ticket System',
-                                iconURL: 'https://cdn.discordapp.com/attachments/1188570570288275600/1353296064928813127/cb3ba39c559e8033534fddcc375a658b.png',
-                            })
-                            .setTimestamp();
-            
-                        await ticketCreator.send({
-                            embeds: [closeEmbed],
-                            files: [transcript], 
-                        });
-                    } catch (error) {
-                        await interaction.reply({
-                            content: 'I was unable to send a DM to the ticket creator. They may have DMs disabled.',
-                            ephemeral: true,
-                        });
-                    }
-                }
             
                 // Send an embed in the ticket channel indicating the ticket is closed
                 const closeChannelEmbed = new EmbedBuilder()
@@ -812,11 +746,80 @@ module.exports = {
                     .setTimestamp();
             
                 await interaction.channel.send({ embeds: [closeChannelEmbed] });
+
+                // Generate a transcript
+                const transcript = await createTranscript(interaction.channel, {
+                    limit: -1,
+                    returnType: 'attachment',
+                    filename: `${interaction.channel.name}-transcript.html`,
+                });
+                            
+                 // Send the transcript to the logs channel
+                 const logsChannel = interaction.guild.channels.cache.get('1353384132675244127');
+                 if (logsChannel) {
+                      await logsChannel.send({
+                            content: `Transcript for ${interaction.channel.name}:`,
+                            files: [transcript],
+                      });
+                }
             
                 // Lock the channel
                 await interaction.channel.permissionOverwrites.edit(interaction.guild.id, {
                     SendMessages: false,
                 });
+
+                                // Send an embed to the user in DMs with the transcript
+                                if (ticketCreator) {
+                                    try {
+                                        const closeEmbed = new EmbedBuilder()
+                                            .setColor('#fc7a23')
+                                            .setTitle('🎟️ Your Ticket Has Been Closed')
+                                            .setDescription('Thank you for reaching out to PixelBound Entertainment! Your ticket has been closed. Below is a transcript of your ticket for your records.')
+                                            .addFields(
+                                                {
+                                                    name: 'Ticket Channel',
+                                                    value: `${interaction.channel.name}`,
+                                                    inline: false,
+                                                },
+                                                {
+                                                    name: 'Closed By',
+                                                    value: `${interaction.member.user.tag} (ID: ${interaction.member.id})`,
+                                                    inline: false,
+                                                },
+                                                {
+                                                    name: 'Closed At',
+                                                    value: new Date().toLocaleString('en-GB', { 
+                                                        timeZone: 'Europe/London', 
+                                                        hour12: false,
+                                                        day: '2-digit',
+                                                        month: 'short',
+                                                        year: 'numeric',
+                                                        hour: '2-digit',
+                                                        minute: '2-digit'
+                                                    }),
+                                                    inline: false,
+                                                }
+                                            )
+                                            .setFooter({
+                                                text: 'PixelBound Entertainment - Ticket System',
+                                                iconURL: 'https://cdn.discordapp.com/attachments/1188570570288275600/1353296064928813127/cb3ba39c559e8033534fddcc375a658b.png',
+                                            })
+                                            .setTimestamp();
+                            
+                                        await ticketCreator.send({
+                                            embeds: [closeEmbed],
+                                        });
+                                        await ticketCreator.send({
+                                            files: [transcript], 
+                                        })
+                                    } catch (error) {
+                                        console.log(error)
+                                        await interaction.reply({
+                                            content: 'I was unable to send a DM to the ticket creator. They may have DMs disabled.',
+                                            ephemeral: true,
+                                        });
+                                    }
+                                }
             
                 // Delete the channel after 30 seconds
                 setTimeout(async () => {
